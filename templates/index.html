@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Poste de supervision — Biogaz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <div class="entete">
+    <div>
+      <div class="titre-principal">POSTE DE <span>SUPERVISION</span> — BIOGAZ</div>
+      <div class="sous-titre">DIGESTEUR &rarr; FILTRATION &rarr; CUVE TAMPON &rarr; COMPRESSEUR &rarr; DETENDEUR &rarr; MOTEUR</div>
+    </div>
+    <div class="controles">
+      <span id="statutPill" class="statut-pill statut-ok">EN MARCHE</span>
+      <span class="cycle-compteur">cycle <span id="cycleVal">0</span></span>
+      <button id="btnMarche">Mettre en pause</button>
+      <button id="btnDefautDig">Simuler defaut digesteur</button>
+      <button id="btnGazNC">Simuler gaz non conforme</button>
+      <button id="btnReset">Reinitialiser</button>
+    </div>
+  </div>
+
+  <div class="schema" id="schema">
+    <!-- rempli par JS -->
+  </div>
+
+  <div class="grille">
+
+    <div class="panneau">
+      <div class="panneau-titre">Digesteur (etape 1)</div>
+      <div class="jauge">
+        <div class="jauge-tete"><span class="jauge-label">Temperature</span>
+          <span class="jauge-val" id="v-temp">-- degC</span></div>
+        <div class="jauge-piste"><div class="jauge-remplissage" id="b-temp"></div></div>
+      </div>
+      <div class="jauge">
+        <div class="jauge-tete"><span class="jauge-label">Niveau</span>
+          <span class="jauge-val" id="v-niveau">-- %</span></div>
+        <div class="jauge-piste"><div class="jauge-remplissage" id="b-niveau"></div></div>
+      </div>
+      <div class="jauge">
+        <div class="jauge-tete"><span class="jauge-label">pH</span>
+          <span class="jauge-val" id="v-ph">--</span></div>
+        <div class="jauge-piste"><div class="jauge-remplissage" id="b-ph"></div></div>
+      </div>
+    </div>
+
+    <div class="panneau">
+      <div class="panneau-titre">Filtres (etape 2) — delta P</div>
+      <div class="jauge">
+        <div class="jauge-tete"><span class="jauge-label">Filtre eau</span>
+          <span class="jauge-val" id="v-fEau">-- mbar</span></div>
+        <div class="jauge-piste"><div class="jauge-remplissage" id="b-fEau"></div></div>
+      </div>
+      <div class="jauge">
+        <div class="jauge-tete"><span class="jauge-label">Filtre H2S</span>
+          <span class="jauge-val" id="v-fH2s">-- mbar</span></div>
+        <div class="jauge-piste"><div class="jauge-remplissage" id="b-fH2s"></div></div>
+      </div>
+      <div class="jauge">
+        <div class="jauge-tete"><span class="jauge-label">Filtre poussiere</span>
+          <span class="jauge-val" id="v-fPous">-- mbar</span></div>
+        <div class="jauge-piste"><div class="jauge-remplissage" id="b-fPous"></div></div>
+      </div>
+    </div>
+
+    <div class="panneau">
+      <div class="panneau-titre">Analyseur de biogaz</div>
+      <div class="jauge">
+        <div class="jauge-tete"><span class="jauge-label">CH4</span>
+          <span class="jauge-val" id="v-ch4">-- %</span></div>
+        <div class="jauge-piste"><div class="jauge-remplissage" id="b-ch4"></div></div>
+      </div>
+      <div class="jauge">
+        <div class="jauge-tete"><span class="jauge-label">CO2</span>
+          <span class="jauge-val" id="v-co2">-- %</span></div>
+        <div class="jauge-piste"><div class="jauge-remplissage" id="b-co2"></div></div>
+      </div>
+      <div class="jauge">
+        <div class="jauge-tete"><span class="jauge-label">H2S</span>
+          <span class="jauge-val" id="v-h2s">-- ppm</span></div>
+        <div class="jauge-piste"><div class="jauge-remplissage" id="b-h2s"></div></div>
+      </div>
+      <div class="pastille-ligne">
+        <span class="pastille" id="p-ev3"></span>
+        <span class="pastille-label" id="l-ev3">--</span>
+      </div>
+    </div>
+
+    <div class="panneau">
+      <div class="panneau-titre">Cuve tampon &amp; sequence (etapes 3-4)</div>
+      <div class="jauge">
+        <div class="jauge-tete"><span class="jauge-label">Niveau cuve</span>
+          <span class="jauge-val" id="v-cuve">-- %</span></div>
+        <div class="jauge-piste"><div class="jauge-remplissage" id="b-cuve"></div></div>
+      </div>
+      <div class="sequence-etat" id="v-sequence">Sequence : --</div>
+      <div class="pastille-ligne"><span class="pastille" id="p-ev"></span>
+        <span class="pastille-label">Electrovanne (avant surpresseur)</span></div>
+      <div class="pastille-ligne"><span class="pastille" id="p-surpresseur"></span>
+        <span class="pastille-label">Surpresseur</span></div>
+    </div>
+
+    <div class="panneau panneau-large">
+      <div class="panneau-titre">Moteur (etapes 5-6)</div>
+      <div class="grande-valeur-label">Regime (frequence)</div>
+      <div class="grande-valeur">
+        <span class="chiffre" id="v-freq">0.00</span>
+        <span class="unite">Hz (consigne 50.0)</span>
+      </div>
+      <canvas id="chartFreq" width="320" height="70"></canvas>
+      <div class="jauge" style="margin-top:10px;">
+        <div class="jauge-tete"><span class="jauge-label">Tension</span>
+          <span class="jauge-val" id="v-tension">-- V</span></div>
+        <div class="jauge-piste"><div class="jauge-remplissage" id="b-tension"></div></div>
+      </div>
+      <div class="jauge">
+        <div class="jauge-tete"><span class="jauge-label">Ouverture vanne gaz</span>
+          <span class="jauge-val" id="v-ouverture">-- %</span></div>
+        <div class="jauge-piste"><div class="jauge-remplissage" id="b-ouverture"></div></div>
+      </div>
+      <div class="jauge">
+        <div class="jauge-tete"><span class="jauge-label">Charge foyer</span>
+          <span class="jauge-val" id="v-charge">-- kW</span></div>
+        <div class="jauge-piste"><div class="jauge-remplissage" id="b-charge"></div></div>
+      </div>
+      <div class="pastille-ligne"><span class="pastille" id="p-groupe"></span>
+        <span class="pastille-label">Moteur en marche</span></div>
+    </div>
+
+    <div class="panneau panneau-large">
+      <div class="panneau-titre">Journal des evenements</div>
+      <div class="journal-liste" id="journal"></div>
+    </div>
+
+  </div>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
